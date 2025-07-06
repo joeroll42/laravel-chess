@@ -6,17 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name')->unique();
             $table->string('email')->unique();
+            $table->string('phone')->nullable()->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->decimal('balance', 10, 2)->default(0.00);
+            $table->unsignedBigInteger('token_balance')->default(0);
+            $table->text('lichess_link')->nullable();
+            $table->text('chess_com_link')->nullable();
+            $table->string('account_status')->nullable(); // Consider enum for controlled values
+            $table->json('roles')->nullable(); // Alternatively, create roles table if relational
             $table->rememberToken();
             $table->timestamps();
         });
@@ -37,9 +41,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('users');
@@ -47,3 +48,4 @@ return new class extends Migration
         Schema::dropIfExists('sessions');
     }
 };
+

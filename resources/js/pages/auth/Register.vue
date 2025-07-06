@@ -1,18 +1,107 @@
+<template>
+    <div class="min-h-screen flex items-center justify-center bg-[#f8fbff] px-4">
+        <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-md space-y-6">
+            <div class="text-center">
+                <h2 class="text-2xl font-bold text-gray-900">Create Account</h2>
+                <p class="text-sm text-gray-600">Join to play, earn and challenge others</p>
+            </div>
+
+            <form @submit.prevent="submit" class="space-y-4">
+                <div>
+                    <input
+                        type="text"
+                        v-model="form.name"
+                        placeholder="Username"
+                        autocomplete="username"
+                        class="w-full rounded-lg border bg-gray-100 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                        :class="{ 'border-red-500': form.errors.name }"
+                    />
+                    <p v-if="form.errors.name" class="mt-1 text-sm text-red-600">{{ form.errors.name }}</p>
+                </div>
+
+                <div>
+                    <input
+                        type="email"
+                        v-model="form.email"
+                        placeholder="Email address"
+                        autocomplete="email"
+                        class="w-full rounded-lg border bg-gray-100 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                        :class="{ 'border-red-500': form.errors.email }"
+                    />
+                    <p v-if="form.errors.email" class="mt-1 text-sm text-red-600">{{ form.errors.email }}</p>
+                </div>
+
+                <div>
+                    <input
+                        type="tel"
+                        v-model="form.phone"
+                        placeholder="Phone number"
+                        autocomplete="tel"
+                        class="w-full rounded-lg border bg-gray-100 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                        :class="{ 'border-red-500': form.errors.phone }"
+                    />
+                    <p v-if="form.errors.phone" class="mt-1 text-sm text-red-600">{{ form.errors.phone }}</p>
+                </div>
+
+
+                <div>
+                    <input
+                        type="password"
+                        v-model="form.password"
+                        placeholder="Password"
+                        autocomplete="new-password"
+                        class="w-full rounded-lg border bg-gray-100 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                        :class="{ 'border-red-500': form.errors.password }"
+                    />
+                    <p v-if="form.errors.password" class="mt-1 text-sm text-red-600">{{ form.errors.password }}</p>
+                </div>
+
+                <div>
+                    <input
+                        type="password"
+                        v-model="form.password_confirmation"
+                        placeholder="Confirm Password"
+                        autocomplete="new-password"
+                        class="w-full rounded-lg border bg-gray-100 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                        :class="{ 'border-red-500': form.errors.password_confirmation }"
+                    />
+                    <p v-if="form.errors.password_confirmation" class="mt-1 text-sm text-red-600">
+                        {{ form.errors.password_confirmation }}
+                    </p>
+                </div>
+
+                <p class="text-xs text-gray-500 text-center">
+                    By continuing, you agree to our
+                    <a href="#" class="text-blue-600 font-medium hover:underline">Terms & Privacy</a>.
+                </p>
+
+                <button
+                    type="submit"
+                    class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50"
+                    :disabled="form.processing"
+                >
+                    <span v-if="form.processing">Creating account...</span>
+                    <span v-else>Sign Up</span>
+                </button>
+
+                <p class="text-center text-sm text-gray-600">
+                    Already have an account?
+                    <a :href="route('login')" class="text-blue-600 hover:underline">Log in</a>
+                </p>
+            </form>
+        </div>
+    </div>
+</template>
+
 <script setup lang="ts">
-import InputError from '@/components/InputError.vue';
-import TextLink from '@/components/TextLink.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import AuthBase from '@/layouts/AuthLayout.vue';
-import { Head, useForm } from '@inertiajs/vue3';
-import { LoaderCircle } from 'lucide-vue-next';
+import { useForm } from '@inertiajs/vue3';
 
 const form = useForm({
-    name: '',
-    email: '',
-    password: '',
-    password_confirmation: '',
+    name: 'mwauar',
+    email: 'kimmwaus@gmail.com',
+    password: 'password',
+    phone:'254719445697',
+    password_confirmation: 'password',
 });
 
 const submit = () => {
@@ -21,63 +110,3 @@ const submit = () => {
     });
 };
 </script>
-
-<template>
-    <AuthBase title="Create an account" description="Enter your details below to create your account">
-        <Head title="Register" />
-
-        <form @submit.prevent="submit" class="flex flex-col gap-6">
-            <div class="grid gap-6">
-                <div class="grid gap-2">
-                    <Label for="name">Name</Label>
-                    <Input id="name" type="text" required autofocus :tabindex="1" autocomplete="name" v-model="form.name" placeholder="Full name" />
-                    <InputError :message="form.errors.name" />
-                </div>
-
-                <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
-                    <Input id="email" type="email" required :tabindex="2" autocomplete="email" v-model="form.email" placeholder="email@example.com" />
-                    <InputError :message="form.errors.email" />
-                </div>
-
-                <div class="grid gap-2">
-                    <Label for="password">Password</Label>
-                    <Input
-                        id="password"
-                        type="password"
-                        required
-                        :tabindex="3"
-                        autocomplete="new-password"
-                        v-model="form.password"
-                        placeholder="Password"
-                    />
-                    <InputError :message="form.errors.password" />
-                </div>
-
-                <div class="grid gap-2">
-                    <Label for="password_confirmation">Confirm password</Label>
-                    <Input
-                        id="password_confirmation"
-                        type="password"
-                        required
-                        :tabindex="4"
-                        autocomplete="new-password"
-                        v-model="form.password_confirmation"
-                        placeholder="Confirm password"
-                    />
-                    <InputError :message="form.errors.password_confirmation" />
-                </div>
-
-                <Button type="submit" class="mt-2 w-full" tabindex="5" :disabled="form.processing">
-                    <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
-                    Create account
-                </Button>
-            </div>
-
-            <div class="text-center text-sm text-muted-foreground">
-                Already have an account?
-                <TextLink :href="route('login')" class="underline underline-offset-4" :tabindex="6">Log in</TextLink>
-            </div>
-        </form>
-    </AuthBase>
-</template>

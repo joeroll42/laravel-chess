@@ -3,14 +3,17 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    /** @use HasFactory<UserFactory> */
+    use HasFactory, Notifiable, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -18,9 +21,16 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
-        'email',
-        'password',
+        "name",
+        "email",
+        "phone",
+        "password",
+        "roles",
+        "balance",
+        "token_balance",
+        "lichess_link",
+        "chess_com_link",
+        "account_status",
     ];
 
     /**
@@ -43,6 +53,30 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'roles' => 'array',
         ];
     }
+
+    // User.php
+
+    public function withdrawals(): HasMany
+    {
+        return $this->hasMany(WithdrawalRequest::class, 'initiator');
+    }
+
+    public function handledWithdrawals(): HasMany
+    {
+        return $this->hasMany(WithdrawalRequest::class, 'moderator_account_id');
+    }
+
+    public function sentTransactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class, 'transaction_origin');
+    }
+
+    public function receivedTransactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class, 'transaction_destination');
+    }
+
 }

@@ -1,13 +1,67 @@
+<template>
+    <div class="min-h-screen flex items-center justify-center bg-[#f8fbff] px-4">
+        <div class="w-full max-w-sm space-y-6">
+            <h2 class="text-center text-2xl font-bold text-gray-900">Welcome back</h2>
+
+            <div v-if="status" class="text-center text-green-600 text-sm">
+                {{ status }}
+            </div>
+
+            <form @submit.prevent="submit" class="space-y-4">
+                <div>
+                    <input
+                        type="email"
+                        v-model="form.email"
+                        placeholder="Email"
+                        autocomplete="email"
+                        class="w-full rounded-lg bg-gray-100 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                        :class="{ 'border border-red-500': form.errors.email }"
+                    />
+                    <div v-if="form.errors.email" class="text-sm text-red-600 mt-1">
+                        {{ form.errors.email }}
+                    </div>
+                </div>
+
+                <div>
+                    <input
+                        type="password"
+                        v-model="form.password"
+                        placeholder="Password"
+                        autocomplete="current-password"
+                        class="w-full rounded-lg bg-gray-100 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                        :class="{ 'border border-red-500': form.errors.password }"
+                    />
+                    <div v-if="form.errors.password" class="text-sm text-red-600 mt-1">
+                        {{ form.errors.password }}
+                    </div>
+                </div>
+
+                <div class="flex justify-between text-sm text-blue-600">
+                    <a v-if="canResetPassword" :href="route('password.request')" class="hover:underline">
+                        Forgot password?
+                    </a>
+                </div>
+
+                <button
+                    type="submit"
+                    class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50"
+                    :disabled="form.processing"
+                >
+                    <span v-if="form.processing">Logging in...</span>
+                    <span v-else>Log in</span>
+                </button>
+
+                <p class="text-center text-sm text-gray-600">
+                    Don’t have an account?
+                    <a :href="route('register')" class="text-blue-600 hover:underline">Register</a>
+                </p>
+            </form>
+        </div>
+    </div>
+</template>
+
 <script setup lang="ts">
-import InputError from '@/components/InputError.vue';
-import TextLink from '@/components/TextLink.vue';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import AuthBase from '@/layouts/AuthLayout.vue';
-import { Head, useForm } from '@inertiajs/vue3';
-import { LoaderCircle } from 'lucide-vue-next';
+import { useForm } from '@inertiajs/vue3';
 
 defineProps<{
     status?: string;
@@ -26,68 +80,3 @@ const submit = () => {
     });
 };
 </script>
-
-<template>
-    <AuthBase title="Log in to your account" description="Enter your email and password below to log in">
-        <Head title="Log in" />
-
-        <div v-if="status" class="mb-4 text-center text-sm font-medium text-green-600">
-            {{ status }}
-        </div>
-
-        <form @submit.prevent="submit" class="flex flex-col gap-6">
-            <div class="grid gap-6">
-                <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        required
-                        autofocus
-                        :tabindex="1"
-                        autocomplete="email"
-                        v-model="form.email"
-                        placeholder="email@example.com"
-                    />
-                    <InputError :message="form.errors.email" />
-                </div>
-
-                <div class="grid gap-2">
-                    <div class="flex items-center justify-between">
-                        <Label for="password">Password</Label>
-                        <TextLink v-if="canResetPassword" :href="route('password.request')" class="text-sm" :tabindex="5">
-                            Forgot password?
-                        </TextLink>
-                    </div>
-                    <Input
-                        id="password"
-                        type="password"
-                        required
-                        :tabindex="2"
-                        autocomplete="current-password"
-                        v-model="form.password"
-                        placeholder="Password"
-                    />
-                    <InputError :message="form.errors.password" />
-                </div>
-
-                <div class="flex items-center justify-between">
-                    <Label for="remember" class="flex items-center space-x-3">
-                        <Checkbox id="remember" v-model="form.remember" :tabindex="3" />
-                        <span>Remember me</span>
-                    </Label>
-                </div>
-
-                <Button type="submit" class="mt-4 w-full" :tabindex="4" :disabled="form.processing">
-                    <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
-                    Log in
-                </Button>
-            </div>
-
-            <div class="text-center text-sm text-muted-foreground">
-                Don't have an account?
-                <TextLink :href="route('register')" :tabindex="5">Sign up</TextLink>
-            </div>
-        </form>
-    </AuthBase>
-</template>
