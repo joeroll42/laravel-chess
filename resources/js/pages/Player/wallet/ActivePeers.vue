@@ -99,7 +99,7 @@ async function submitRequest() {
                     <div v-if="orders.length === 0" class="text-sm text-gray-500">No orders yet.</div>
                     <div v-for="order in orders" :key="order.id" class="space-y-1 rounded border bg-white p-4 text-sm shadow-sm">
                         <p v-if="order.view_as === 'moderator'">
-                            <span class="pr-2 font-semibold">Requested by:</span> {{ order.initiator.name }}
+                            <span class="pr-2 font-semibold">Requested by:</span> {{ order.initiatorUser.name }}
                         </p>
                         <p v-else>
                             <span class="pr-2 font-semibold">Requesting from:</span> {{ order.moderator.name }}

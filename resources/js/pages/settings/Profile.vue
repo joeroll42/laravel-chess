@@ -1,15 +1,12 @@
 <script setup lang="ts">
-import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { Link, useForm, usePage } from '@inertiajs/vue3';
 
-import DeleteUser from '@/components/DeleteUser.vue';
 import HeadingSmall from '@/components/HeadingSmall.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
-import { type BreadcrumbItem, type User } from '@/types';
 
 interface Props {
     mustVerifyEmail: boolean;
@@ -19,11 +16,13 @@ interface Props {
 defineProps<Props>();
 
 const page = usePage();
-const user = page.props.auth.user as User;
+const user = page.props.auth.user;
 
 const form = useForm({
     name: user.name,
-    email: user.email
+    email: user.email,
+    chess_com_link:user.chess_com_link,
+    lichess_link:user.lichess_link
 });
 
 const submit = () => {
@@ -64,6 +63,20 @@ const logout = () => {
                         placeholder="Email address"
                     />
                     <InputError class="mt-2" :message="form.errors.email" />
+                </div>
+
+                <div class="grid gap-2">
+                    <Label for="name">Chess.com Username</Label>
+                    <Input id="chess_com_link" class="mt-1 block w-full" v-model="form.chess_com_link" autocomplete="chess_com_link"
+                           placeholder="Chess.com Username" />
+                    <InputError class="mt-2" :message="form.errors.chess_com_link" />
+                </div>
+
+                <div class="grid gap-2">
+                    <Label for="name">Lichess Username</Label>
+                    <Input id="lichess_link" class="mt-1 block w-full" v-model="form.lichess_link" autocomplete="lichess_link"
+                           placeholder="Lichess Username" />
+                    <InputError class="mt-2" :message="form.errors.lichess_link" />
                 </div>
 
                 <div v-if="mustVerifyEmail && !user.email_verified_at">

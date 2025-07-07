@@ -14,7 +14,7 @@ const order = {
     },
     view_as: props.withdrawalRequest.view_as,
     amount: props.withdrawalRequest.transaction.amount,
-    toPhone: props.withdrawalRequest.initiator.phone,
+    toPhone: props.withdrawalRequest.initiator_user.phone,
     requestor_status:props.withdrawalRequest.transaction.confirmation_status == 0 ? 'Pending' : 'Confirmed',
 };
 

@@ -8,13 +8,17 @@ use App\Http\Controllers\WithdrawalRequestController;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Http\Request;
+
 
 Route::get('/', function () {
     return redirect('login');
 //    return Inertia::render('Welcome');
 })->name('home');
 
-Route::get('dashboard',[DashboardController::class,'index'])->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('dashboard',[DashboardController::class,'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::post('/auth/users/online', function (Request $request) {
@@ -141,7 +145,7 @@ Route::middleware(['auth', 'verified'])->prefix('challenges')->name('challenges.
 
 //Wallet actions
 Route::middleware(['auth', 'verified'])->prefix('wallet_request')->name('wallet_request.')->group(function () {
-    Route::post('/create',[WalletController::class,'create'])->name('create');
+    Route::post('/create',[WalletController::class,'request'])->name('create');
 });
 
 

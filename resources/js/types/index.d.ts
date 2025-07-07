@@ -33,6 +33,8 @@ export interface User {
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
+    lichess_link:string;
+    chess_com_link:string;
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;

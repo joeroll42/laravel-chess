@@ -18,6 +18,7 @@ const props = defineProps(['matchTransactions'])
             <div
                 :class="[
                     'font-semibold',
+
                     match.type === 'credit' ? 'text-green-600' : 'text-red-600'
                 ]"
             >

@@ -116,11 +116,15 @@ class ChallengeController extends Controller
     /**
      * @throws ValidationException
      */
-    public function get_results(Request $request, $id): false|string
+    public function get_results(Request $request, $id)
     {
-        $resp = $this->resolveMatchAndTransferStake($request,$id,'challenger');
+        $challenge = Challenge::findOrFail($id);
 
-        return json_encode($resp);
+        if (!in_array($challenge->challenge_status, ['won', 'loss', 'draw', 'anomaly'])) {
+            $this->resolveMatchAndTransferStake($request, $id, 'challenger');
+        }
+
+        return redirect()->route('matches.results', [$id]);
     }
 
     public function resolveMatchAndTransferStake(Request $request, $challengeId, $winnerRole): JsonResponse
@@ -222,8 +226,37 @@ class ChallengeController extends Controller
 
     public function show_results(Request $request, $id): Response
     {
-        return Inertia::render('Player/matches/MatchResults', ['id' => $id]);
+        $user = Auth::user();
+        $challenge = Challenge::with(['user', 'opponent'])->findOrFail($id);
+
+        // Restrict access to only participants
+        if ($challenge->user_id !== $user->id && $challenge->opponent_id !== $user->id) {
+            abort(403, 'Unauthorized access to this match result.');
+        }
+
+        // Determine result for logged-in user
+        $status = $challenge->challenge_status; // e.g., won, loss, draw, anomaly
+        $loggedInIsChallenger = $challenge->user_id === $user->id;
+
+        $result = match ($status) {
+            'draw' => 'draw',
+            'anomaly', 'canceled' => 'canceled',
+            'won' => $loggedInIsChallenger ? 'win' : 'loss',
+            'loss' => $loggedInIsChallenger ? 'loss' : 'win',
+            default => 'canceled',
+        };
+
+        return Inertia::render('Player/matches/MatchResults', [
+            'result'       => $result,
+            'opponent'     => $loggedInIsChallenger ? $challenge->opponent?->name : $challenge->user->name,
+            'tokens'       => $challenge->tokens,
+            'winnings'     => (float) $challenge->stake,
+            'timeControl'  => $challenge->time_control,
+            'newRank'      => 1200,
+            'rankChange'   => 0,
+        ]);
     }
+
 
     public function store_challenge(Request $request): RedirectResponse
     {

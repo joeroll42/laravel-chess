@@ -20,7 +20,7 @@ class WithdrawalRequest extends Model
     ];
 
     // 🔁 The user who initiated the withdrawal
-    public function initiator(): BelongsTo
+    public function initiatorUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'initiator');
     }

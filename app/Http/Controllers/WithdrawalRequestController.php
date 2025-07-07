@@ -16,7 +16,7 @@ class WithdrawalRequestController extends Controller
     {
         $userId = auth()->id();
 
-        $withdrawalRequest = WithdrawalRequest::with(['initiator', 'moderator', 'transaction'])->findOrFail($id);
+        $withdrawalRequest = WithdrawalRequest::with(['initiatorUser', 'moderator', 'transaction'])->findOrFail($id);
 
         // Determine if the user is the initiator or the moderator
         $viewAs = $withdrawalRequest->moderator_account_id === $userId

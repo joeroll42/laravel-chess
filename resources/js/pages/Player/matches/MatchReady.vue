@@ -2,42 +2,50 @@
 import SidebarNav from '@/components/SidebarNav.vue';
 import MobileNav from '@/components/MobileNav.vue';
 import axios from 'axios';
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 
 const props = defineProps(['challenge']);
+const authUserId = usePage().props.auth.user.id;
+const challenge = props.challenge;
+
+const isChallenger = challenge.user_id === authUserId;
+
+const challengerName = isChallenger
+    ? 'You'
+    : challenge.user?.name ?? 'Unknown';
+
+const opponentName = isChallenger
+    ? challenge.opponent?.name ?? 'Waiting...'
+    : 'You';
 
 const match = {
-    id: props.challenge.id,
-    challenger: props.challenge.user.name,
-    opponent: props.challenge.opponent.name,
-    tokens: props.challenge.tokens,
-    stake: props.challenge.stake,
-    timeControl: props.challenge.time_control,
+    id: challenge.id,
+    challenger: challengerName,
+    opponent: opponentName,
+    tokens: challenge.tokens,
+    stake: challenge.stake,
+    timeControl: challenge.time_control,
     status: 'Funds Secured in Escrow',
-    platform: props.challenge.platform.link,
+    platform: challenge.platform.link,
 };
 
 const handleGetMatchResults = async () => {
     try {
-        const resp = await axios.get(route('matches.get-results', [match.id]));
+        const response = await axios.get(route('matches.get-results', [match.id]), {
+            // Allow browser to follow the redirect
+            maxRedirects: 0,
+            validateStatus: (status) => status >= 200 && status < 400,
+        });
 
-        if (resp.data.status === 'success') {
-            const resultStatus = resp.data.resultStatus;
-
-            if (resultStatus === 'pending') {
-                alert("Match results are still being processed. Please try again in a few minutes.");
-            } else if (resultStatus === 'success') {
-                router.visit(route('matches.results', [match.id]));
-            }
-        } else {
-            console.warn('Unexpected status:', resp.data.status);
+        // If the backend returned a redirect, manually follow it
+        if (response.request.responseURL) {
+            window.location.href = response.request.responseURL;
         }
-
     } catch (error) {
         console.error('Error fetching match results:', error);
+        alert('Failed to get match results. Please try again.');
     }
 };
-
 
 </script>
 
@@ -61,8 +69,8 @@ const handleGetMatchResults = async () => {
                     <hr class="mb-2">
                     <p class="text-green-600 font-medium mt-2">✔ {{ match.status }}</p>
                 </div>
-                <p class="text-sm text-orange-600 mt-2">⏱️ You have 2 minutes to start</p>
 
+                <p class="text-sm text-orange-600 mt-2">⏱️ You have 2 minutes to start</p>
 
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4">
                     <button
@@ -72,13 +80,10 @@ const handleGetMatchResults = async () => {
                         Fetch Results
                     </button>
                 </div>
-
             </div>
         </main>
-
 
         <!-- Bottom nav: mobile only -->
         <MobileNav />
     </div>
 </template>
-

@@ -1,50 +1,42 @@
 <script setup lang="ts">
-import SidebarNav from '@/components/SidebarNav.vue';
 import MobileNav from '@/components/MobileNav.vue';
+import SidebarNav from '@/components/SidebarNav.vue';
 
-const props = defineProps(['user'])
+const props = defineProps(['user', 'recentMatches']);
 
 const balance = props.user.balance;
 const tokens = props.user.token_balance;
-const recentMatches = [
-    { opponent: '@opponent123', result: 'Loss', platform: 'Lichess', tokens: 2, stake: 0, date: 'Jun 29' },
-    { opponent: '@kenmaster', result: 'Win', platform: 'Chess.com', tokens: 2, stake: 70, date: 'Jun 28' },
-];
-
-
+const recentMatches = props.recentMatches;
 </script>
 
 <template>
     <div class="flex min-h-screen bg-gray-50">
-        <!-- Sidebar for desktop -->
+        <!-- Sidebar -->
         <SidebarNav />
 
         <!-- Main content -->
-        <main class="flex-1 p-2 space-y-6">
+        <main class="flex-1 space-y-6 p-4 pb-6">
             <h1 class="text-2xl font-bold">Your Dashboard</h1>
-            <p>Welcome, {{user.name}}</p>
+            <p>Welcome, {{ user.name }}</p>
 
             <!-- Wallet + Tokens -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div class="rounded-lg bg-white shadow p-4">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div class="rounded-lg bg-white p-4 shadow">
                     <p class="text-sm text-gray-500">Wallet Balance</p>
-                    <p class="text-xl font-semibold">KES {{ balance.toLocaleString() }}</p>
+                    <p class="text-xl font-semibold">KES {{ Number(balance).toLocaleString() }}</p>
                 </div>
-                <div class="rounded-lg bg-white shadow p-4">
+                <div class="rounded-lg bg-white p-4 shadow">
                     <p class="text-sm text-gray-500">Game Tokens</p>
                     <p class="text-xl font-semibold text-pink-600">🎟️ {{ tokens }}</p>
                 </div>
             </div>
 
             <!-- Recent Matches -->
-            <div>
-                <h2 class="text-lg font-medium mb-3">Recent Matches</h2>
-                <div class="space-y-2">
-                    <div
-                        v-for="(match, i) in recentMatches"
-                        :key="i"
-                        class="flex items-center justify-between rounded-lg bg-white p-4 shadow-sm"
-                    >
+            <div class="mb-[50px]">
+                <h2 class="mb-3 text-lg font-medium">Recent Matches</h2>
+
+                <div v-if="recentMatches.length" class="space-y-2">
+                    <div v-for="(match, i) in recentMatches" :key="i" class="flex items-center justify-between rounded-lg bg-white p-4 shadow-sm">
                         <div>
                             <p class="font-semibold">vs. {{ match.opponent }}</p>
                             <p class="text-sm text-gray-500">
@@ -52,20 +44,24 @@ const recentMatches = [
                             </p>
                         </div>
                         <span
-                            class="px-2 py-1 text-sm rounded-full font-medium"
+                            class="rounded-full px-2 py-1 text-sm font-medium"
                             :class="{
-                'bg-green-100 text-green-600': match.result === 'Win',
-                'bg-red-100 text-red-600': match.result === 'Loss',
-              }"
+                                'bg-green-100 text-green-600': match.result === 'Win',
+                                'bg-red-100 text-red-600': match.result === 'Loss',
+                                'bg-yellow-100 text-yellow-700': match.result === 'Draw',
+                                'bg-gray-200 text-gray-600': match.result === 'Anomaly',
+                            }"
                         >
-              {{ match.result }}
-            </span>
+                            {{ match.result }}
+                        </span>
                     </div>
                 </div>
+
+                <div v-else class="text-sm text-gray-500">You have not played any matches yet.</div>
             </div>
         </main>
 
-        <!-- Bottom nav: mobile only -->
+        <!-- Mobile Nav -->
         <MobileNav />
     </div>
 </template>

@@ -9,11 +9,9 @@ use App\Models\WithdrawalRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Illuminate\Support\Carbon;
 use Inertia\Response;
-use App\Models\Platform;
 
 class WalletController extends Controller
 {
@@ -24,23 +22,42 @@ class WalletController extends Controller
     {
         $user = Auth::user();
 
-        // Token transactions
+        // All token-related transactions (purchase, create challenge, accept challenge)
         $tokenTransactions = Transaction::where('transaction_origin', $user->id)
-            ->where('request_type', 'token_purchase')
+            ->whereIn('request_type', ['token_purchase', 'token_deduction', 'token_use'])
             ->latest()
             ->get()
             ->map(function ($tx) {
                 $notes = json_decode($tx->transaction_notes ?? '{}', true);
+                $action = match ($tx->request_type) {
+                    'token_purchase'  => 'Purchase',
+                    'token_deduction' => 'Create Challenge',
+                    'token_use'       => 'Accept Challenge',
+                    default           => 'Token Activity'
+                };
+
                 return [
                     'tokens' => $notes['tokens'] ?? 0,
-                    'note' => $notes['note'] ?? null,
+                    'note' => $notes['note'] ?? $action,
                     'date' => Carbon::parse($tx->created_at)->format('M d, Y'),
                 ];
             });
 
+
         // Deposit / Withdrawal transactions
+
         $depositTransactions = Transaction::where('transaction_origin', $user->id)
-            ->whereIn('request_type', ['deposit', 'withdrawal'])
+            ->where(function ($q) {
+                $q->where('request_type', 'deposit')
+                    ->orWhere(function ($sub) {
+                        $sub->where('request_type', 'withdrawal')
+                            ->whereIn('request_id', function ($query) {
+                                $query->select('id')
+                                    ->from('withdrawal_requests')
+                                    ->where('request_status', 'completed');
+                            });
+                    });
+            })
             ->latest()
             ->get()
             ->map(function ($tx) {
@@ -50,6 +67,7 @@ class WalletController extends Controller
                     'date' => Carbon::parse($tx->created_at)->format('F d, Y'),
                 ];
             });
+
 
         // Match result transactions (e.g. betting or challenge system)
         $matchTransactions = Transaction::with(['challenge.user', 'challenge.opponent'])
@@ -115,21 +133,29 @@ class WalletController extends Controller
         $roles = (array)auth()->user()->roles;
         $isModerator = in_array('moderator', $roles);
 
-        $orders = WithdrawalRequest::with(['moderator', 'initiator', 'transaction'])
-            ->when($isModerator, fn($q) => $q->where('moderator_account_id', $userId))
-            ->when(!$isModerator, fn($q) => $q->where('initiator', $userId))
+        $orders = WithdrawalRequest::with(['moderator', 'initiatorUser', 'transaction'])
+            ->where(function ($q) use ($userId) {
+                $q->where('moderator_account_id', $userId)
+                    ->orWhere('initiator', $userId);
+            })
             ->orderBy('created_at', 'desc')
             ->get()
-            ->map(function ($order) use ($isModerator) {
+            ->map(function ($order) use ($userId) {
+                $viewAs = match (true) {
+                    $order->moderator_account_id === $userId => 'moderator',
+                    $order->initiator === $userId => 'requestor',
+                    default => 'unknown',
+                };
+
                 return [
                     'id' => $order->id,
                     'notes' => $order->notes,
                     'status' => $order->request_status,
-                    'moderator' => $order->moderator,
-                    'initiator' => User::findOrFail($order->initiator),
-                    'transaction' => $order->transaction,
+                    'moderator' => $order->moderator,     // uses Eloquent relationship
+                    'initiatorUser' => $order->initiatorUser,     // uses Eloquent relationship
+                    'transaction' => $order->transaction, // assumed relationship
                     'created_at' => $order->created_at,
-                    'view_as' => $isModerator ? 'moderator' : 'requestor', // ✅ add tag
+                    'view_as' => $viewAs,
                 ];
             });
 
@@ -139,80 +165,67 @@ class WalletController extends Controller
         ]);
     }
 
-
-
-    public function store_challenge(Request $request): \Illuminate\Http\RedirectResponse
+    public function request(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'stake'        => 'required|numeric|min:10',
-            'platform'     => 'required|exists:platforms,name',
-            'timeControl'  => 'required|string',
+            'amount' => 'required|numeric|min:10',
+            'phone' => 'required|string',
+            'peer_id' => 'required|exists:users,id',
         ]);
 
         $user = Auth::user();
 
-        // Calculate total stake already locked in pending/anomaly challenges
-        $lockedStake = Challenge::where('user_id', $user->id)
-            ->whereIn('challenge_status', ['pending', 'anomaly'])
+        // 1. Pending withdrawals (already requested, not completed)
+        $pendingTotal = Transaction::where('transaction_origin', $user->id)
+            ->where('request_type', 'withdrawal')
+            ->where('transaction_complete_status', false)
+            ->sum('amount');
+
+        // 2. Locked stake in active matches
+        $lockedStake = Challenge::whereNotIn('challenge_status', ['won', 'loss', 'draw'])
+            ->where(function ($q) use ($user) {
+                $q->where('user_id', $user->id)
+                    ->orWhere('opponent_id', $user->id);
+            })
             ->sum('stake');
 
-        $availableBalance = $user->balance - $lockedStake;
+        // 3. Calculate withdrawable balance
+        $availableBalance = $user->balance - $pendingTotal - $lockedStake;
 
-        // Ensure they have enough balance to stake
-        if ($availableBalance < $validated['stake']) {
-            return redirect()->back()->withErrors([
-                'stake' => 'Insufficient free balance to create this challenge.'
-            ]);
+        // 4. Ensure available balance is enough
+        if ($validated['amount'] > $availableBalance) {
+            return response()->json([
+                'message' => 'Your available balance is locked by active matches or pending withdrawals.',
+            ], 422);
         }
 
-        // Calculate required tokens (1 token per 10 KES)
-        $requiredTokens = ceil($validated['stake'] / 10);
+        // 5. Create Withdrawal Request
+        $withdrawalRequest = WithdrawalRequest::create([
+            'initiator' => $user->id,
+            'moderator_account_id' => $validated['peer_id'],
+            'request_status' => 'pending',
+            'notes' => json_encode(['phone' => $validated['phone']]),
+        ]);
 
-        if ($user->tokens < $requiredTokens) {
-            return redirect()->back()->withErrors([
-                'stake' => "You need at least {$requiredTokens} tokens to create this challenge."
-            ]);
-        }
+        // 6. Create Transaction record
+        Transaction::create([
+            'request_type' => 'withdrawal',
+            'request_id' => $withdrawalRequest->id,
+            'transaction_origin' => $user->id,
+            'transaction_destination' => $validated['peer_id'],
+            'amount' => $validated['amount'],
+            'currency' => 'KES',
+            'delivery_confirmation_status' => false,
+            'transaction_stage' => 'initiated',
+            'confirmation_status' => false,
+            'transaction_complete_status' => false,
+            'transaction_notes' => json_encode([
+                'notes' => '',
+                'chat' => '',
+            ]),
+        ]);
 
-        $platform = Platform::where('name', $validated['platform'])->firstOrFail();
-
-        DB::transaction(function () use ($validated, $platform, $user, $requiredTokens) {
-            // Deduct tokens from user
-            $user->tokens -= $requiredTokens;
-            $user->save();
-
-            // Create challenge
-            $challenge = Challenge::create([
-                'user_id'       => $user->id,
-                'request_state' => 'pending',
-                'stake'         => $validated['stake'],
-                'tokens'        => $requiredTokens,
-                'platform_id'   => $platform->id,
-                'time_control'  => $validated['timeControl'],
-            ]);
-
-            // Record token deduction as a transaction
-            Transaction::create([
-                'request_type' => 'token_deduction',
-                'request_id' => $challenge->id,
-                'transaction_origin' => $user->id,
-                'transaction_destination' => $user->id,
-                'amount' => $requiredTokens * 10, // visible KES equivalent
-                'currency' => 'KES',
-                'delivery_confirmation_status' => true,
-                'transaction_stage' => 'confirmed',
-                'confirmation_status' => true,
-                'transaction_complete_status' => true,
-                'transaction_notes' => json_encode([
-                    'tokens' => $requiredTokens,
-                    'amount' => $requiredTokens * 10,
-                    'note' => "Token deduction for challenge ID {$challenge->id}",
-                ]),
-            ]);
-        });
-
-        return redirect()->route('matches.active')
-            ->with('success', 'Challenge created!');
+        return response()->json(['message' => 'Withdrawal request submitted successfully.']);
     }
 
     public function buyTokens(Request $request): JsonResponse

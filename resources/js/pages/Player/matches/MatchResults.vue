@@ -1,19 +1,27 @@
 <script setup lang="ts">
 import SidebarNav from '@/components/SidebarNav.vue';
 import MobileNav from '@/components/MobileNav.vue';
-import { ref } from 'vue';
 import { Link } from '@inertiajs/vue3';
 
-const result = ref('win'); // options: 'win', 'loss', 'draw', 'canceled'
+const props = defineProps<{
+    result: 'win' | 'loss' | 'draw' | 'canceled';
+    opponent: string;
+    tokens: number;
+    winnings: number;
+    timeControl: string;
+    newRank: number;
+    rankChange: number;
+}>();
 
 const match = {
-    opponent: '@opponent123',
-    tokens: 3,
-    winnings: 600,
-    timeControl: '5+0 Blitz',
-    newRank: 1285,
-    rankChange: +15
+    opponent: props.opponent,
+    tokens: props.tokens,
+    winnings: props.winnings,
+    timeControl: props.timeControl,
+    newRank: props.newRank,
+    rankChange: props.rankChange,
 };
+
 </script>
 
 <template>
