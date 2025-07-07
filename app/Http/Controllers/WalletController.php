@@ -6,6 +6,7 @@ use App\Models\Challenge;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\WithdrawalRequest;
+use Illuminate\Support\Facades\Request as HttpRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,10 +31,10 @@ class WalletController extends Controller
             ->map(function ($tx) {
                 $notes = json_decode($tx->transaction_notes ?? '{}', true);
                 $action = match ($tx->request_type) {
-                    'token_purchase'  => 'Purchase',
+                    'token_purchase' => 'Purchase',
                     'token_deduction' => 'Create Challenge',
-                    'token_use'       => 'Accept Challenge',
-                    default           => 'Token Activity'
+                    'token_use' => 'Accept Challenge',
+                    default => 'Token Activity'
                 };
 
                 return [
@@ -72,7 +73,7 @@ class WalletController extends Controller
         // Match result transactions (e.g. betting or challenge system)
         $matchTransactions = Transaction::with(['challenge.user', 'challenge.opponent'])
             ->whereIn('request_type', ['stake_win_credit', 'stake_loss_debit'])
-            ->where(fn ($q) => $q->where('transaction_origin', $user->id)->orWhere('transaction_destination', $user->id))
+            ->where(fn($q) => $q->where('transaction_origin', $user->id)->orWhere('transaction_destination', $user->id))
             ->latest()
             ->get()
             ->groupBy('request_id')
@@ -87,19 +88,16 @@ class WalletController extends Controller
 
                 return [
                     'opponent' => $opponent?->name ?? 'Unknown',
-                    'result'   => $tx->transaction_destination === $user->id ? 'Win' : ($tx->transaction_origin === $user->id ? 'Loss' : 'N/A'),
-                    'tokens'   => $challenge->tokens,
-                    'amount'   => abs($tx->amount),
-                    'type'     => $tx->transaction_destination === $user->id ? 'credit' : 'debit',
-                    'tag'      => $tx->transaction_destination === $user->id ? 'Match Win' : 'Match Loss',
-                    'date'     => $tx->created_at->format('M d, Y'),
+                    'result' => $tx->transaction_destination === $user->id ? 'Win' : ($tx->transaction_origin === $user->id ? 'Loss' : 'N/A'),
+                    'tokens' => $challenge->tokens,
+                    'amount' => abs($tx->amount),
+                    'type' => $tx->transaction_destination === $user->id ? 'credit' : 'debit',
+                    'tag' => $tx->transaction_destination === $user->id ? 'Match Win' : 'Match Loss',
+                    'date' => $tx->created_at->format('M d, Y'),
                 ];
             })
             ->filter()
             ->values();
-
-
-
 
 
         return Inertia::render('Player/wallet/Main', [
@@ -112,7 +110,6 @@ class WalletController extends Controller
             ],
         ]);
     }
-
 
     public function index(): Response
     {
@@ -168,8 +165,8 @@ class WalletController extends Controller
     public function request(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'amount' => 'required|numeric|min:10',
-            'phone' => 'required|string',
+            'amount'  => 'required|numeric|min:10',
+            'phone'   => 'required|string',
             'peer_id' => 'required|exists:users,id',
         ]);
 
@@ -201,33 +198,54 @@ class WalletController extends Controller
 
         // 5. Create Withdrawal Request
         $withdrawalRequest = WithdrawalRequest::create([
-            'initiator' => $user->id,
+            'initiator'            => $user->id,
             'moderator_account_id' => $validated['peer_id'],
-            'request_status' => 'pending',
-            'notes' => json_encode(['phone' => $validated['phone']]),
+            'request_status'       => 'pending',
+            'notes'                => json_encode(['phone' => $validated['phone']]),
         ]);
 
         // 6. Create Transaction record
         Transaction::create([
-            'request_type' => 'withdrawal',
-            'request_id' => $withdrawalRequest->id,
-            'transaction_origin' => $user->id,
-            'transaction_destination' => $validated['peer_id'],
-            'amount' => $validated['amount'],
-            'currency' => 'KES',
-            'delivery_confirmation_status' => false,
-            'transaction_stage' => 'initiated',
-            'confirmation_status' => false,
+            'request_type'                => 'withdrawal',
+            'request_id'                  => $withdrawalRequest->id,
+            'transaction_origin'          => $user->id,
+            'transaction_destination'     => $validated['peer_id'],
+            'amount'                      => $validated['amount'],
+            'currency'                    => 'KES',
+            'delivery_confirmation_status'=> false,
+            'transaction_stage'           => 'initiated',
+            'confirmation_status'         => false,
             'transaction_complete_status' => false,
-            'transaction_notes' => json_encode([
-                'notes' => '',
-                'chat' => '',
-            ]),
+            'transaction_notes'           => json_encode(['notes' => '', 'chat' => '']),
         ]);
+
+        // 7. Notify the requester
+        $requesterNotif = HttpRequest::create('/notifications', 'POST', [
+            'title'       => '📤 Withdrawal Requested',
+            'message'     => "You requested a withdrawal of KES {$validated['amount']}.",
+            'type'        => 'withdrawal',
+            'routeName'   => 'wallet.withdrawal-details',
+            'routeParams' => ['id' => $withdrawalRequest->id],
+            'details'     => "Peer ID: {$validated['peer_id']}\nPhone: {$validated['phone']}",
+        ]);
+        $requesterNotif->setUserResolver(fn() => $user);
+        app(NotificationsController::class)->store($requesterNotif);
+
+        // 8. Notify the peer/moderator
+        $peer = User::findOrFail($validated['peer_id']);
+        $peerNotif = HttpRequest::create('/notifications', 'POST', [
+            'title'       => '📥 New Withdrawal Request',
+            'message'     => "{$user->name} requested a withdrawal of KES {$validated['amount']}.",
+            'type'        => 'withdrawal',
+            'routeName'   => 'wallet.withdrawal-details',
+            'routeParams' => ['id' => $withdrawalRequest->id],
+            'details'     => "Request ID: {$withdrawalRequest->id}\nPhone: {$validated['phone']}",
+        ]);
+        $peerNotif->setUserResolver(fn() => $peer);
+        app(NotificationsController::class)->store($peerNotif);
 
         return response()->json(['message' => 'Withdrawal request submitted successfully.']);
     }
-
     public function buyTokens(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -241,11 +259,12 @@ class WalletController extends Controller
             return response()->json(['message' => 'Insufficient balance.'], 422);
         }
 
-        // Deduct balance and record transaction
+        // 1) Deduct balance and credit tokens
         $user->balance -= $cost;
         $user->token_balance += $validated['amount'];
         $user->save();
 
+        // 2) Log transaction
         Transaction::create([
             'request_type' => 'token_purchase',
             'request_id' => 0,
@@ -263,6 +282,19 @@ class WalletController extends Controller
             ]),
         ]);
 
-        return response()->json(['message' => 'Tokens purchased successfully.']);
+        // 3) Fire notification to user
+        $notif = HttpRequest::create('/notifications', 'POST', [
+            'title' => '📥 Deposit Received',
+            'message' => "You purchased {$validated['amount']} tokens for KES {$cost}.",
+            'type' => 'deposit',
+            'routeName' => 'wallet.main',
+            'routeParams' => [],
+            'details' => "New token balance: {$user->token_balance}\nRemaining KES balance: {$user->balance}",
+        ]);
+        $notif->setUserResolver(fn() => $user);
+        app(NotificationsController::class)->store($notif);
+
+        // 4) Return JSON response
+        return response()->json(['message' => 'Tokens purchased and notification sent.']);
     }
 }

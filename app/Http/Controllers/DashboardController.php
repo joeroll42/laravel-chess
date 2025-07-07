@@ -3,17 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Events\UserJoined;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use App\Models\Challenge;
+use Inertia\Response;
 
 class DashboardController extends Controller
 {
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
-    public function index(): \Inertia\Response
+    public function index(): Response
     {
 //        broadcast(new UserJoined(Auth::user()));
         $user = Auth::user();

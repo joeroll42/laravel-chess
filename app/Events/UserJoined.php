@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use App\Models\User;
+use Exception;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -20,14 +21,14 @@ class UserJoined implements ShouldBroadcastNow
 
     /**
      * Create a new event instance.
-     * @throws \Exception
+     * @throws Exception
      */
     public function __construct(User $user = null)
     {
         $this->user = $user ?? auth()->user();
 
         if (! $this->user) {
-            throw new \Exception('User not found');
+            throw new Exception('User not found');
         }
     }
 

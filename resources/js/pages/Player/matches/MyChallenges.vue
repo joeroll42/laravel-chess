@@ -53,7 +53,6 @@ const getMatchResult = (challenge: any): string => {
                 <Link
                     as="button"
                     :href="route('matches.active')"
-                    @click="showMyChallanges = false"
                     class="rounded bg-gray-200 px-4 py-2 font-medium text-gray-700 hover:bg-gray-300"
                     :class="{ 'bg-blue-100 text-blue-700': showMyChallanges }"
                 >

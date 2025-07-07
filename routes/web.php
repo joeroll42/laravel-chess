@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\NotificationsController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\WithdrawalRequestController;
 use Illuminate\Support\Facades\Broadcast;
@@ -83,12 +84,26 @@ Route::middleware(['auth', 'verified'])->prefix('matches')->name('matches.')->gr
     Route::post('create-challenge', [ChallengeController::class,'store_challenge'])->name('store-challenge');
 });
 
-// Player Notifications Routes
-Route::middleware(['auth', 'verified'])->prefix('notifications')->name('notifications.')->group(function () {
-    Route::get('/', function () {
-        return Inertia::render('Player/notifications/NotificationsList');
-    })->name('list');
-});
+
+Route::middleware(['auth', 'verified'])
+    ->prefix('notifications')
+    ->name('notifications.')
+    ->group(function () {
+
+        // 1. Inertia page
+        Route::get('/', function () {
+            return Inertia::render('Player/notifications/NotificationsList');
+        })->name('list');
+
+        // 2. JSON API: fetch all notifications for current user
+        Route::get('/all', [NotificationsController::class, 'index'])
+            ->name('all');
+
+        // 3. JSON API: store a new notification
+        Route::post('/', [NotificationsController::class, 'store'])
+            ->name('store');
+    });
+
 
 // Player Profile Routes
 Route::middleware(['auth', 'verified'])->prefix('profile')->name('player-profile.')->group(function () {

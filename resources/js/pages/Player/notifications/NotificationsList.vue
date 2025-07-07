@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import MobileNav from '@/components/MobileNav.vue';
 import SidebarNav from '@/components/SidebarNav.vue';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { Link } from '@inertiajs/vue3';
 
 interface NotificationItem {
     id: number;
@@ -10,37 +11,11 @@ interface NotificationItem {
     type: string;
     timestamp: string;
     details?: string;
+    routeName?: string;
+    routeParams?: Record<string, any>;
 }
 
-// type: 'match',
-// type: 'deposit',
-// type: 'withdrawal',
-
-const notifications = ref<NotificationItem[]>([
-    {
-        id: 1,
-        title: '🎉 Match Won',
-        message: "You've won a match against @ChessMaster22!",
-        type: 'match',
-        timestamp: '2m ago',
-        details: `Congratulations! You've won your match against @opponent123.\nMatch Type: Blitz (5+0)\nTokens Used: 3\nWinnings: KES 600\nDate: June 30, 2025`,
-    },
-    {
-        id: 2,
-        title: '📥 Deposit Received',
-        message: 'Your TinyPesa deposit of KES 1,000 was successful.',
-        type: 'deposit',
-        timestamp: '5h ago',
-    },
-    {
-        id: 3,
-        title: '📤 P2P Withdrawal Request',
-        message: 'Brian O. has sent KES 500. Confirm once received.',
-        type: 'withdrawal',
-        timestamp: '10h ago',
-    },
-]);
-
+const notifications = ref<NotificationItem[]>([]);
 const selectedNotification = ref<NotificationItem | null>(null);
 
 function openNotification(note: NotificationItem) {
@@ -50,6 +25,22 @@ function openNotification(note: NotificationItem) {
 function closeNotification() {
     selectedNotification.value = null;
 }
+
+async function loadNotifications() {
+    try {
+        const res = await fetch('/notifications/all', {
+            headers: { 'Accept': 'application/json' }
+        });
+        if (!res.ok) throw new Error('Failed to load notifications');
+        notifications.value = await res.json();
+    } catch (e) {
+        console.error('loadNotifications:', e);
+    }
+}
+
+onMounted(() => {
+    loadNotifications();
+});
 </script>
 
 <template>
@@ -78,7 +69,11 @@ function closeNotification() {
             </div>
 
             <!-- Notification Detail Modal -->
-            <div v-if="selectedNotification" class="fixed inset-0 z-50 flex items-center justify-center bg-black/30" @click.self="closeNotification">
+            <div
+                v-if="selectedNotification"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
+                @click.self="closeNotification"
+            >
                 <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
                     <div class="flex items-start justify-between">
                         <div>
@@ -92,8 +87,18 @@ function closeNotification() {
                         {{ selectedNotification.details || selectedNotification.message }}
                     </p>
 
-                    <div class="mt-6 text-right">
-                        <button class="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" @click="closeNotification">
+                    <div class="mt-6 text-right space-x-2">
+                        <Link
+                            v-if="selectedNotification.routeName"
+                            :href="route(selectedNotification.routeName, selectedNotification.routeParams)"
+                            class="rounded bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+                        >
+                            View
+                        </Link>
+                        <button
+                            @click="closeNotification"
+                            class="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                        >
                             Close
                         </button>
                     </div>

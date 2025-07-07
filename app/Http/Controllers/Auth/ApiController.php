@@ -4,12 +4,13 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class ApiController extends Controller
 {
-    public function gen_access_token(Request $request): \Illuminate\Http\JsonResponse
+    public function gen_access_token(Request $request): JsonResponse
     {
         // ✅ Validate request input
         $validatedData = $request->validate([

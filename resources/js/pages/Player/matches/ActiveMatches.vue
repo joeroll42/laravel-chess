@@ -34,14 +34,12 @@ const availableMatches = challenges.map((challenge) => {
             <div class="flex flex-col gap-2 mb-4">
                 <Link as="button"
                       :href="route('matches.create-challenge')"
-                    @click="showMyChallanges = false"
                     class="px-4 py-2 rounded bg-blue-600 text-white font-medium hover:bg-blue-700"
                     :class="{ 'opacity-50': showMyChallanges }"
                 >
                     + Create Challenge
                 </Link>
                 <Link as="button" :href="route('matches.my-challenges')"
-                    @click="showMyChallanges = true"
                     class="px-4 py-2 rounded bg-gray-200 text-gray-700 font-medium hover:bg-gray-300"
                     :class="{ 'bg-blue-100 text-blue-700': showMyChallanges }"
                 >

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Events\UserJoined;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,7 +28,7 @@ class AuthenticatedSessionController extends Controller
 
     /**
      * Handle an incoming authentication request.
-     * @throws \Exception
+     * @throws Exception
      */
     public function store(LoginRequest $request): RedirectResponse
     {

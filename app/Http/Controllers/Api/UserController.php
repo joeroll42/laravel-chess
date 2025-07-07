@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -109,7 +110,7 @@ class UserController extends Controller
         return response()->json(['message' => 'User deleted successfully.']);
     }
 
-    #[NoReturn] public function activeUser(Request $request): \Illuminate\Http\JsonResponse
+    #[NoReturn] public function activeUser(Request $request): JsonResponse
     {
         return response()->json(Auth::user()->only(['id', 'name', 'email']));
     }
