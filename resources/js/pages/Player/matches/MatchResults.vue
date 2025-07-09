@@ -2,6 +2,7 @@
 import SidebarNav from '@/components/SidebarNav.vue';
 import MobileNav from '@/components/MobileNav.vue';
 import { Link } from '@inertiajs/vue3';
+import PageHeading from '@/components/PageHeading.vue';
 
 const props = defineProps<{
     result: 'win' | 'loss' | 'draw' | 'canceled';
@@ -31,7 +32,7 @@ const match = {
 
         <!-- Main content -->
         <main class="flex-1 p-6">
-            <h1 class="text-2xl font-bold mb-6">Match Result</h1>
+            <PageHeading :heading="'Match Result'"/>
 
             <div class="max-w-xl bg-white shadow border border-gray-200 rounded-lg p-6 space-y-4">
                 <!-- Result Banner -->

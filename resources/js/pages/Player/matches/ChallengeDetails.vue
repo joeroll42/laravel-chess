@@ -3,6 +3,7 @@ import SidebarNav from '@/components/SidebarNav.vue';
 import MobileNav from '@/components/MobileNav.vue';
 import { ref, computed } from 'vue';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
+import PageHeading from '@/components/PageHeading.vue';
 
 const props = defineProps(['challengeDetails']);
 const page = usePage();
@@ -46,7 +47,7 @@ const handleContend = () => {
         <!-- Main content -->
         <main class="flex-1 p-6">
             <div class="w-full max-w-md space-y-4">
-                <h1 class="text-xl font-bold">Challenge Details</h1>
+                <PageHeading :heading="'Challenge Details'"/>
 
                 <div class="bg-white rounded-lg shadow p-6 space-y-5">
                     <!-- My Info Section -->
@@ -91,7 +92,7 @@ const handleContend = () => {
                             <span>⏱️ Time Control</span>
                             <span class="font-semibold">{{ challenge.time_control }}</span>
                         </div>
-                        <div class="flex justify-between items-start">
+                        <div v-show="false" class="flex justify-between items-start">
                             <span>📝 Note</span>
                             <span class="text-right">{{ challenge.notes }}</span>
                         </div>

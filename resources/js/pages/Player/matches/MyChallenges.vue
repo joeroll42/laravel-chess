@@ -3,6 +3,7 @@ import MobileNav from '@/components/MobileNav.vue';
 import SidebarNav from '@/components/SidebarNav.vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { reactive, ref } from 'vue';
+import PageHeading from '@/components/PageHeading.vue';
 
 const props = defineProps(['challenges']);
 const showMyChallanges = ref(false);
@@ -36,7 +37,7 @@ const getMatchResult = (challenge: any): string => {
 
         <!-- Main Content -->
         <main class="flex-1 space-y-6 p-6">
-            <h1 class="text-2xl font-bold">My Challenges</h1>
+            <PageHeading :heading="'My Challenges'"/>
 
             <!-- Tabs -->
             <div class="mb-4 flex flex-col gap-2">
@@ -74,7 +75,7 @@ const getMatchResult = (challenge: any): string => {
                         <p class="font-semibold text-gray-800">
                             <template v-if="challenge.opponent_id === $page.props.auth.user.id"> @{{ challenge.user?.name }} </template>
                             <template v-else-if="challenge.opponent"> @{{ challenge.opponent?.name }} </template>
-                            <template v-else> Waiting for opponent... </template>
+                            <template v-else> No opponent </template>
                         </p>
                         <p class="text-sm text-gray-600">Tokens 🎟️· {{ challenge.tokens }}</p>
                         <p class="text-sm text-gray-600">Stake: KES {{ challenge.stake }}</p>

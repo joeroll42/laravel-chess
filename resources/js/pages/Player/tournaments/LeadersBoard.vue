@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import SidebarNav from '@/components/SidebarNav.vue';
 import MobileNav from '@/components/MobileNav.vue';
+import PageHeading from '@/components/PageHeading.vue';
 
 const currentTab = ref<'wins' | 'staked'>('wins');
 
@@ -24,7 +25,8 @@ const leaderboardData = {
         <SidebarNav />
 
         <main class="flex-1 p-6 space-y-6">
-            <h1 class="text-2xl font-bold">Leaderboard</h1>
+            <PageHeading :heading="'Leaderboard'"/>
+
             <p class="text-sm text-gray-600">Top players based on wins and stake</p>
 
             <!-- Tabs -->

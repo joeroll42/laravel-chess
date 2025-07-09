@@ -3,6 +3,7 @@ import MobileNav from '@/components/MobileNav.vue';
 import SidebarNav from '@/components/SidebarNav.vue';
 import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
+import PageHeading from '@/components/PageHeading.vue';
 
 const isEditing = ref(false); // toggle to true for edit mode
 
@@ -30,9 +31,7 @@ const handlePostChallenge = () => {
         <SidebarNav />
 
         <main class="flex-1 p-6">
-            <h1 class="mb-6 text-2xl font-bold">
-                {{ isEditing ? 'Edit Challenge' : 'Create a New Challenge' }}
-            </h1>
+            <PageHeading :heading="'Create Challenge'"/>
 
             <div class="max-w-xl space-y-4 rounded-lg bg-white p-6 shadow">
 

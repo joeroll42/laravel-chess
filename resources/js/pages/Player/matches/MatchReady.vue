@@ -3,6 +3,7 @@ import SidebarNav from '@/components/SidebarNav.vue';
 import MobileNav from '@/components/MobileNav.vue';
 import axios from 'axios';
 import { router, usePage } from '@inertiajs/vue3';
+import PageHeading from '@/components/PageHeading.vue';
 
 const props = defineProps(['challenge']);
 const authUserId = usePage().props.auth.user.id;
@@ -56,7 +57,7 @@ const handleGetMatchResults = async () => {
 
         <!-- Main content -->
         <main class="flex-1 p-6">
-            <h1 class="text-2xl font-bold mb-6">Match Ready</h1>
+            <PageHeading :heading="'Match Ready'"/>
 
             <div class="max-w-xl bg-white shadow border border-gray-200 rounded-lg p-6 space-y-4">
                 <div class="text-sm text-gray-700">

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import SidebarNav from '@/components/SidebarNav.vue';
 import MobileNav from '@/components/MobileNav.vue';
+import PageHeading from '@/components/PageHeading.vue';
 
 const withdrawal = {
     amount: 700,
@@ -22,7 +23,7 @@ const withdrawal = {
 
         <!-- Main content -->
         <div class="min-h-screen bg-gray-50 p-6">
-            <h1 class="text-2xl font-bold mb-2">Withdrawal Details</h1>
+            <PageHeading :heading="'Withdrawal Details'"/>
 
             <!-- Transaction Info -->
             <div class="bg-white border rounded-lg p-5 shadow-sm space-y-2 max-w-md">

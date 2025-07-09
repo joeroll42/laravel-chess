@@ -3,6 +3,7 @@ import SidebarNav from '@/components/SidebarNav.vue';
 import MobileNav from '@/components/MobileNav.vue';
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
+import PageHeading from '@/components/PageHeading.vue';
 
 const props = defineProps(['withdrawalRequest']);
 
@@ -75,7 +76,8 @@ const confirmReceipt = () => {
 
         <!-- Main content -->
         <div class="min-h-screen bg-gray-50 p-6">
-            <h1 class="text-2xl font-bold mb-4">Withdrawal (Peer-to-Peer)</h1>
+            <PageHeading :heading="'Withdrawal (Peer-to-Peer)'" />
+
             <p class="text-sm text-gray-600 mb-6">Select a peer to process your withdrawal</p>
 
             <!-- Peer Info -->

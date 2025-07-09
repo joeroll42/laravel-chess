@@ -38,6 +38,10 @@ return new class extends Migration {
 
             $table->string('time_control')->default('5+0'); // e.g. 5 minutes + 0 increment
 
+            $table->boolean('challenger_ready')->default(false);
+            $table->boolean('contender_ready')->default(false);
+
+
             $table->timestamp('accepted_at')->nullable();
             $table->timestamp('rejected_at')->nullable();
             $table->timestamp('canceled_at')->nullable();

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import MobileNav from '@/components/MobileNav.vue';
 import SidebarNav from '@/components/SidebarNav.vue';
+import PageHeading from '@/components/PageHeading.vue';
 
 const props = defineProps(['user', 'recentMatches']);
 
@@ -16,7 +17,7 @@ const recentMatches = props.recentMatches;
 
         <!-- Main content -->
         <main class="flex-1 space-y-6 p-4 pb-6">
-            <h1 class="text-2xl font-bold">Your Dashboard</h1>
+            <PageHeading :heading="'Your Dashboard'"/>
             <p>Welcome, {{ user.name }}</p>
 
             <!-- Wallet + Tokens -->

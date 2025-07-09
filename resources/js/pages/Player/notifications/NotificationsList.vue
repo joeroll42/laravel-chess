@@ -3,6 +3,7 @@ import MobileNav from '@/components/MobileNav.vue';
 import SidebarNav from '@/components/SidebarNav.vue';
 import { ref, onMounted } from 'vue';
 import { Link } from '@inertiajs/vue3';
+import PageHeading from '@/components/PageHeading.vue';
 
 interface NotificationItem {
     id: number;
@@ -50,7 +51,9 @@ onMounted(() => {
 
         <!-- Main content -->
         <div class="min-h-screen bg-gray-50 p-6">
-            <h1 class="mb-4 text-2xl font-bold">Notifications</h1>
+            <PageHeading :heading="'Notifications'"/>
+
+
             <p class="mb-4 text-sm text-gray-600">Messages and updates about your activity</p>
 
             <div class="space-y-3">

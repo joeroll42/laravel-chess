@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import SidebarNav from '@/components/SidebarNav.vue';
 import MobileNav from '@/components/MobileNav.vue';
+import PageHeading from '@/components/PageHeading.vue';
 </script>
 
 <template>
@@ -10,9 +11,7 @@ import MobileNav from '@/components/MobileNav.vue';
 
         <!-- Main content -->
         <main class="flex-1 p-6 space-y-6">
-            <h1 class="text-2xl font-bold">Edit Profile</h1>
-
-            <!-- Your content here -->
+            <PageHeading :heading="'Edit Profile'"/>
 
         </main>
 

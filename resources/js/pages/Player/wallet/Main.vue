@@ -6,6 +6,7 @@ import { ref } from 'vue';
 import TokensTransactions from '@/pages/Player/wallet/Components/TokensTransactions.vue';
 import WalletTransactions from '@/pages/Player/wallet/Components/WalletTransactions.vue';
 import MatchTransactions from '@/pages/Player/wallet/Components/MatchTransactions.vue';
+import PageHeading from '@/components/PageHeading.vue';
 
 // Props from backend
 const props = defineProps<{
@@ -29,7 +30,7 @@ const currentTab = ref<'tokens' | 'matches' | 'deposits'>('tokens');
 
         <!-- Main content -->
         <main class="flex-1 space-y-6 p-6">
-            <h1 class="text-2xl font-bold">Wallet</h1>
+            <PageHeading :heading="'Wallet'" />
 
             <!-- Dark Balance Banner -->
             <div class="flex items-center justify-between rounded-xl bg-gray-900 p-5 text-white">

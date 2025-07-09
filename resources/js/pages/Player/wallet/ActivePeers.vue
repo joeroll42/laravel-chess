@@ -4,6 +4,7 @@ import SidebarNav from '@/components/SidebarNav.vue';
 import { Link } from '@inertiajs/vue3';
 import axios from 'axios';
 import { ref } from 'vue';
+import PageHeading from '@/components/PageHeading.vue';
 
 const props = defineProps(['moderators', 'orders']);
 
@@ -62,7 +63,7 @@ async function submitRequest() {
 
         <!-- Main content -->
         <div class="min-h-screen bg-gray-50 p-6">
-            <h1 class="mb-4 text-2xl font-bold">Select Peer to Withdraw</h1>
+            <PageHeading :heading="'Select Peer'"/>
 
             <div class="mb-6 flex space-x-4 border-b pb-2">
                 <button

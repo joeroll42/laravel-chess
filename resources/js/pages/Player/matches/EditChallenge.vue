@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import PageHeading from '@/components/PageHeading.vue';
 
 const isEditing = ref(false); // toggle to true for edit mode
 
@@ -15,9 +16,8 @@ const form = ref({
 
 <template>
     <main class="flex-1 p-6">
-        <h1 class="text-2xl font-bold mb-6">
-            {{ isEditing ? 'Edit Challenge' : 'Create a New Challenge' }}
-        </h1>
+
+        <PageHeading :heading="'Edit Challenge'"/>
 
         <div class="max-w-xl bg-white shadow rounded-lg p-6 space-y-4">
             <div>

@@ -3,6 +3,7 @@ import { reactive, ref } from 'vue';
 import SidebarNav from '@/components/SidebarNav.vue';
 import MobileNav from '@/components/MobileNav.vue';
 import { Link } from '@inertiajs/vue3';
+import PageHeading from '@/components/PageHeading.vue';
 
 const props = defineProps(['challenges'])
 const showMyChallanges = ref(false);
@@ -28,7 +29,8 @@ const availableMatches = challenges.map((challenge) => {
 
         <!-- Main content -->
         <main class="flex-1 p-6 space-y-6">
-            <h1 class="text-2xl font-bold">Active Challenges</h1>
+            <PageHeading :heading="'Active Challenges'"/>
+
 
             <!-- Tabs -->
             <div class="flex flex-col gap-2 mb-4">

@@ -2,6 +2,7 @@
 import MobileNav from '@/components/MobileNav.vue';
 import SidebarNav from '@/components/SidebarNav.vue';
 import { Link } from '@inertiajs/vue3';
+import PageHeading from '@/components/PageHeading.vue';
 
 const deposit = {
     method: 'TinyPesa',
@@ -21,7 +22,7 @@ const deposit = {
 
         <!-- Main content -->
         <div class="min-h-screen bg-gray-50 p-6">
-            <h1 class="text-2xl font-bold mb-2">Deposit Details</h1>
+            <PageHeading :heading="'Deposit Details'"/>
 
             <!-- Payment Card -->
             <div class="bg-white border rounded-lg p-5 shadow-sm mb-4">
