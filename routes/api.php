@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Auth\ApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/tokens/create',[ApiController::class, 'gen_access_token']);
@@ -47,6 +48,9 @@ Route::middleware('auth:sanctum')->group(function () {
         return response()->json(['status' => 'updated']);
     });
 });
+
+Broadcast::routes(['middleware' => ['web', 'auth']]);
+
 
 //Route::middleware('auth:sanctum')->prefix('challenges')->group(function () {
 //    Route::apiResource('/', ChallengeController::class);

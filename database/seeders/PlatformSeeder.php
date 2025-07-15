@@ -15,8 +15,8 @@ class PlatformSeeder extends Seeder
         $platforms = [
             [
                 'id'         => 1,
-                'name'       => 'Chess.com',
-                'link'       => 'https://chess.com',
+                'name'       => 'chess.com',
+                'link'       => 'https://www.chess.com',
                 'status'     => 'active',
                 'created_at' => now()->subDay(),
                 'updated_at' => now()->subDay(),
@@ -24,7 +24,7 @@ class PlatformSeeder extends Seeder
             [
                 'id'         => 2,
                 'name'       => 'lichess',
-                'link'       => 'https://lichess.com',
+                'link'       => 'https://www.lichess.com',
                 'status'     => 'active',
                 'created_at' => now()->subDay()->addSeconds(10),
                 'updated_at' => now()->subDay()->addSeconds(10),

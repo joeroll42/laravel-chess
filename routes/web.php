@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NotificationsController;
+use App\Http\Controllers\System\Chess\ChessControllers;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\WithdrawalRequestController;
 use Illuminate\Support\Facades\Broadcast;
@@ -14,12 +15,21 @@ use Illuminate\Http\Request;
 
 Route::get('/', function () {
     return redirect('login');
-//    return Inertia::render('Welcome');
 })->name('home');
+
+Route::get('/fetch-results', [ChessControllers::class,'entry'])->name('test');
 
 Route::get('dashboard',[DashboardController::class,'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
+
+Route::get('active-users',function (){
+    return Inertia::render('ActiveUsers',[
+        'user' => request()->user()
+    ]);
+})
+    ->middleware(['auth', 'verified'])
+    ->name('active-users');
 
 Route::middleware('auth')->group(function () {
     Route::post('/auth/users/online', function (Request $request) {
@@ -82,6 +92,12 @@ Route::middleware(['auth', 'verified'])->prefix('matches')->name('matches.')->gr
     Route::get('results/{id}', [ChallengeController::class,'show_results'])->name('results');
 
     Route::post('create-challenge', [ChallengeController::class,'store_challenge'])->name('store-challenge');
+
+    Route::post('get-active-matches', [ChallengeController::class,'get_active_matches'])->name('get-active-matches');
+
+    Route::post('game-created/{challenge}', [ChallengeController::class,'game_created'])->name('game-created');
+
+    Route::post('opponent-joined/{challenge}', [ChallengeController::class,'opponent_joined'])->name('opponent-joined');
 });
 
 

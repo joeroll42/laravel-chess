@@ -1,64 +1,52 @@
 <script setup lang="ts">
-import Heading from '@/components/Heading.vue';
-import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 import MobileNav from '@/components/MobileNav.vue';
 import SidebarNav from '@/components/SidebarNav.vue';
 
-const sidebarNavItems: NavItem[] = [
-    {
-        title: 'Profile',
-        href: '/settings/profile',
-    },
-    {
-        title: 'Password',
-        href: '/settings/password',
-    },
+const tabs: NavItem[] = [
+    { title: 'Profile',  href: '/settings/profile' },
+    { title: 'Password', href: '/settings/password' },
 ];
 
-const page = usePage();
-
-const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.location).pathname : '';
+const page = usePage<{ ziggy?: { location: string } }>();
+const currentPath = page.props.ziggy?.location
+    ? new URL(page.props.ziggy.location).pathname
+    : '';
 </script>
 
 <template>
     <div class="flex min-h-screen bg-gray-50">
-
-    <SidebarNav/>
+        <SidebarNav />
 
         <main class="flex-1 space-y-6 p-6">
             <h1 class="text-2xl font-bold">Settings</h1>
 
-            <div class="flex flex-col space-y-8 md:space-y-0 lg:flex-row lg:space-y-0 lg:space-x-12">
-                <aside class="w-full max-w-xl lg:w-48">
-                    <nav class="flex flex-col space-y-1 space-x-0">
-                        <Button
-                            v-for="item in sidebarNavItems"
-                            :key="item.href"
-                            variant="ghost"
-                            :class="['w-full justify-start', { 'bg-muted': currentPath === item.href }]"
-                            as-child
-                        >
-                            <Link :href="item.href">
-                                {{ item.title }}
-                            </Link>
-                        </Button>
-                    </nav>
-                </aside>
+            <!-- Tabs -->
+            <nav class="flex space-x-4 border-b border-gray-200">
+                <Link
+                    v-for="tab in tabs"
+                    :key="tab.href"
+                    :href="tab.href"
+                    class="pb-2 text-gray-600 hover:text-gray-800"
+                    :class="{
+            'border-b-2 border-blue-600 text-blue-600': currentPath === tab.href
+          }"
+                >
+                    {{ tab.title }}
+                </Link>
+            </nav>
 
-                <Separator class="my-2 md:hidden" />
+            <!-- Mobile separator -->
+            <Separator class="my-4 md:hidden" />
 
-                <div class="flex-1 md:max-w-2xl">
-                    <section class="max-w-xl space-y-12">
-                        <slot />
-                    </section>
-                </div>
-            </div>
+            <!-- Content slot -->
+            <section class="space-y-6">
+                <slot />
+            </section>
         </main>
 
         <MobileNav />
-
     </div>
 </template>

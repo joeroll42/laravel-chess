@@ -7,11 +7,6 @@ defineProps(['user']);
 
 const onlineUsers = ref<any[]>([]);
 
-window.Echo.join('online-users')
-    .here((users: any[]) => {
-        console.log('Current online users:', users);
-        onlineUsers.value = users;
-    })
 </script>
 
 <template>
@@ -23,9 +18,9 @@ window.Echo.join('online-users')
         <main class="flex-1 space-y-6 p-2">
             <h1 class="text-2xl font-bold">Active Users</h1>
             <p>Welcome, {{ user.name }}</p>
-            <div>
+            <div v-if="onlineUsers.length > 0">
                 <ul>
-                    <li class="mb-1 w-[300px] p-4 shadow" v-for="item in onlineUsers">
+                    <li class="mb-1 w-[300px] p-4 shadow" v-for="item in onlineUsers" :key="item.id">
                         <div class="flex">
                             <h4 class="w-[150px]">Name:</h4>
                             <p>{{ item.name }}</p>

@@ -7,6 +7,7 @@ const isActive = (routeName: string) => {
     return currentRoute === routeName || currentRoute.startsWith(routeName + '.');
 };
 
+
 </script>
 
 <template>

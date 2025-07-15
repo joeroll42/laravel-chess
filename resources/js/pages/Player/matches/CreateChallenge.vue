@@ -9,7 +9,7 @@ const isEditing = ref(false); // toggle to true for edit mode
 
 const form = useForm({
     stake: 0,
-    platform: 'Chess.com',
+    platform: 'chess.com',
     timeControl: '5+0 Blitz',
 });
 
@@ -57,8 +57,8 @@ const handlePostChallenge = () => {
                         class="w-full rounded border px-3 py-2 text-sm focus:border-blue-500 focus:ring"
                         :class="{ 'border-red-500': form.errors.platform }"
                     >
-                        <option value="Lichess">Lichess</option>
-                        <option value="Chess.com">Chess.com</option>
+                        <option value="lichess">Lichess</option>
+                        <option value="chess.com">Chess.com</option>
                     </select>
                     <p v-if="form.errors.platform" class="text-sm text-red-600 mt-1">{{ form.errors.platform }}</p>
                 </div>
@@ -71,8 +71,10 @@ const handlePostChallenge = () => {
                         class="w-full rounded border px-3 py-2 text-sm focus:border-blue-500 focus:ring"
                         :class="{ 'border-red-500': form.errors.timeControl }"
                     >
-                        <option>5+0 Blitz</option>
-                        <option>3+2 Blitz</option>
+                        <option value="5+0 Blitz">5+0 Blitz</option>
+                        <option value="3+2 Blitz">3+2 Blitz</option>
+                        <option value="10+0 Blitz">10+0 Blitz</option>
+
                     </select>
                     <p v-if="form.errors.timeControl" class="text-sm text-red-600 mt-1">{{ form.errors.timeControl }}</p>
                 </div>

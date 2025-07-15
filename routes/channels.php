@@ -13,3 +13,11 @@ Broadcast::channel('online-users', function ($user) {
         'email' => $user->email,
     ];
 });
+
+Broadcast::channel('presence-online', function ($user) {
+    return ['id' => $user->id, 'name' => $user->name];
+});
+
+Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
+    return (int) $user->id === (int) $id;
+});

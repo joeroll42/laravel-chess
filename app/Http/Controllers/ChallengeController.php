@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ChallengeAcceptedNow;
 use App\Models\Challenge;
 use App\Models\Platform;
 use App\Models\Transaction;
@@ -19,14 +20,7 @@ class ChallengeController extends Controller
 {
     public function index(): Response
     {
-        $activeChallenges = Challenge::with(['user', 'opponent', 'platform'])
-            ->where('request_state', 'pending')
-            ->where('user_id', '!=', auth()->id())
-            ->get();
-
-        return Inertia::render('Player/matches/ActiveMatches', [
-            'challenges' => $activeChallenges
-        ]);
+        return Inertia::render('Player/matches/ActiveMatches');
     }
 
     public function my_matches(): Response
@@ -141,6 +135,12 @@ class ChallengeController extends Controller
             ]);
             $creatorNotif->setUserResolver(fn() => $creator);
             app(NotificationsController::class)->store($creatorNotif);
+
+            // Broadcast instantly to the creator
+            event(new ChallengeAcceptedNow(
+                creatorId: $challenge->user_id,
+                challengeId: $challenge->id
+            ));
 
         });
 
@@ -270,7 +270,6 @@ class ChallengeController extends Controller
         ]);
     }
 
-
     public function ready(Request $request, $id): Response
     {
         $challenge = Challenge::with(['user', 'opponent', 'platform'])->find($id);
@@ -289,6 +288,9 @@ class ChallengeController extends Controller
     {
         $user = Auth::user();
         $challenge = Challenge::with(['user', 'opponent'])->findOrFail($id);
+
+        dump($challenge->user->chess_com_link);
+        dd($challenge->opponent->chess_com_link);
 
         // Restrict access to only participants
         if ($challenge->user_id !== $user->id && $challenge->opponent_id !== $user->id) {
@@ -420,6 +422,52 @@ class ChallengeController extends Controller
                 'note' => $note,
                 'challenge_id' => $challenge->id,
             ]),
+        ]);
+    }
+
+    public function get_active_matches(Request $request): JsonResponse
+    {
+        // 1) Pull out the list of online user IDs
+        $onlineIds = collect($request->input('onlineUsers', []))
+            ->pluck('id')
+            ->toArray();
+
+        // 2) If nobody’s online, return an empty array immediately
+        if (empty($onlineIds)) {
+            return response()->json([]);
+        }
+
+        // 3) Fetch only pending challenges where the creator is online
+        $activeChallenges = Challenge::with(['user', 'opponent', 'platform'])
+            ->where('request_state', 'pending')
+            ->whereIn('user_id', $onlineIds)
+            ->where('user_id', '!=', auth()->id())
+            ->get();
+
+        return response()->json($activeChallenges);
+    }
+
+    public function game_created(Challenge $challenge): JsonResponse
+    {
+        $challenge->challenger_ready = true;
+        $challenge->save();
+
+        return \response()->json([
+            'status' => 'success',
+            'message' => 'Challenge Joined',
+            'challenge' => $challenge
+        ]);
+    }
+
+    public function opponent_joined(Challenge $challenge): JsonResponse
+    {
+        $challenge->contender_ready = true;
+        $challenge->save();
+
+        return \response()->json([
+            'status' => 'success',
+            'message' => 'Challenge Joined',
+            'challenge' => $challenge
         ]);
     }
 }

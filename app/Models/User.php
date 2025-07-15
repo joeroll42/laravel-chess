@@ -10,6 +10,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * @property mixed $chess_com_link
+ */
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
